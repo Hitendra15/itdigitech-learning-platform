@@ -1,83 +1,421 @@
-# IT DigiTech Learn: starter (Django REST + React)
+# IT DigiTech Learn
 
-Covers the V1 scope: registration, mandatory Razorpay payment, dashboard, courses/modules/lessons,
-video + notes, MCQ tests with a server-side timer, progress, notifications over WebSocket.
+A full-stack Learning Management System (LMS) for delivering structured
+online learning experiences. The platform combines a React student
+application with a Django REST Framework backend and an administration
+console for managing courses, learners, assessments, billing, and
+support.
 
-## What's new in this version
-- **Admin console** at `/console` (React, superusers and users with role `admin` only): dashboard with revenue and sign-up charts,
-  course / module / lesson editor, test and question editor, students (invite, edit, suspend, unlock courses), orders,
-  plans, coupons, support inbox, help articles, announcements, CSV reports, audit log, email log, feature flags and site settings.
-  Django's own admin is still available at `/django-admin/` as a fallback.
-- **Password recovery**: forgot password, single-use expiring reset link (1 hour), change password, "password changed" security email,
-  all other sessions signed out after a reset. Email verification with resend.
-- **Support**: students open a request (category, priority, attachment), chat in a thread, and see replies live over WebSocket.
-  Admins triage in a live inbox: assign, set status and priority, internal notes, saved replies, reply-and-resolve.
-  Resolved requests auto-close after 3 days (Celery beat). Searchable help articles are suggested while typing.
-- **Email through Celery**: every email (welcome, verification, reset, security alert, ticket confirmation, ticket reply, announcement,
-  export ready) is a Celery task with retries and an `EmailLog` row. HTML templates live in `backend/templates/emails/`.
-- **One WebSocket per tab** carries notifications and support events; it reconnects automatically.
+## Overview
 
-Not yet built (next phases): code lab, projects, interview prep, AI assistant, certificates, college panel.
+IT DigiTech Learn brings core learning and platform operations into one
+application, including course content delivery, timed assessments,
+subscription payments, student progress, notifications, and support
+workflows.
 
-## Run with Docker
-```bash
-cp backend/.env.example backend/.env      # add your Razorpay TEST keys
-docker compose up --build
-docker compose exec backend python manage.py createsuperuser     # this account is an admin and can open /console
-docker compose exec backend python manage.py seed_demo
+### Key capabilities
+
+-   **Authentication and account security** --- registration, email
+    verification, JWT-based authentication, refresh-token handling,
+    password recovery, and password-change notifications.
+-   **Course catalogue and learning** --- courses organized into modules
+    and lessons, with video and note-based lesson content.
+-   **Assessments** --- multiple-choice tests, server-side timers,
+    answer evaluation, progress tracking, and automatic submission of
+    expired attempts.
+-   **Subscriptions and payments** --- plan and order workflows with
+    Razorpay integration, payment status handling, webhook processing,
+    and invoice generation.
+-   **Access management** --- enrollment and course-access rules,
+    including expiration handling.
+-   **Student notifications** --- real-time notifications and support
+    updates over WebSockets.
+-   **Support centre** --- ticket creation, priority and status
+    handling, threaded conversations, attachments, and live replies.
+-   **Administration console** --- dashboards and management screens for
+    courses, content, tests, users, billing, support tickets,
+    announcements, reports, activity, audit logs, email logs, feature
+    flags, and platform settings.
+-   **Background processing** --- Celery tasks for email delivery,
+    report exports, billing reconciliation, assessment maintenance,
+    enrollment expiration, and support workflows.
+-   **API documentation** --- OpenAPI schema and Swagger UI for
+    exploring the API.
+
+## Technology stack
+
+  -----------------------------------------------------------------------
+  Area                                Technologies
+  ----------------------------------- -----------------------------------
+  Frontend                            React 18, Vite, React Router, Axios
+
+  Backend                             Python, Django, Django REST
+                                      Framework
+
+  API authentication                  Simple JWT
+
+  Database                            PostgreSQL
+
+  Background jobs                     Celery, Redis
+
+  Real-time communication             Django Channels, WebSockets, Redis
+                                      channel layer
+
+  Payments                            Razorpay
+
+  API schema                          drf-spectacular, OpenAPI, Swagger
+                                      UI
+
+  Video delivery                      Configurable CDN/token-based video
+                                      URL integration
+
+  PDF generation                      ReportLab
+
+  Testing                             pytest, pytest-django, Vitest,
+                                      Testing Library
+
+  Local orchestration                 Docker Compose
+  -----------------------------------------------------------------------
+
+## Project structure
+
+``` text
+itdigitech/
+├── backend/
+│   ├── apps/
+│   │   ├── accounts/        # Authentication and user accounts
+│   │   ├── organizations/   # Organization-related models
+│   │   ├── catalog/         # Courses, modules, lessons and video access
+│   │   ├── billing/         # Plans, orders, payments and invoices
+│   │   ├── access/          # Enrollment and access rules
+│   │   ├── learning/        # Learning progress
+│   │   ├── assessments/     # Tests, attempts and grading
+│   │   ├── notifications/   # Notifications, email and exports
+│   │   ├── support/         # Support tickets and conversations
+│   │   ├── adminpanel/      # Administrative APIs
+│   │   └── platform_config/ # Feature flags and platform settings
+│   ├── config/              # Django settings, ASGI, URLs and Celery
+│   ├── templates/emails/    # HTML email templates
+│   ├── tests/
+│   ├── .env.example
+│   ├── Dockerfile
+│   ├── manage.py
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── pages/           # Student-facing pages
+│   │   ├── console/         # Administration console
+│   │   ├── components/      # Shared UI components
+│   │   ├── api/             # API client
+│   │   ├── auth/            # Authentication state
+│   │   └── realtime/        # WebSocket integration
+│   ├── package.json
+│   └── vite.config.js
+├── docker-compose.yml
+└── README.md
 ```
-- Student app: http://localhost:5173  - **Admin console: http://localhost:5173/console**  - Django admin (fallback): http://localhost:8000/django-admin/  - API docs: http://localhost:8000/api/docs/
-- In development emails print in the worker log (`docker compose logs -f worker`). For real delivery set the `EMAIL_*` values in `backend/.env`.
+
+## Getting started
+
+### Prerequisites
+
+For the Docker-based setup, install:
+
+-   Docker Desktop with Docker Compose
+-   Git
+
+For running services directly on your machine, you will also need
+Python, Node.js/npm, PostgreSQL, and Redis.
+
+### Option 1: Run with Docker Compose
+
+1.  Clone the repository and enter the project directory:
+
+    ``` bash
+    git clone https://github.com/<your-username>/itdigitech-learning-platform.git
+    cd itdigitech-learning-platform
+    ```
+
+2.  Create your local backend environment file:
+
+    **macOS/Linux**
+
+    ``` bash
+    cp backend/.env.example backend/.env
+    ```
+
+    **Windows PowerShell**
+
+    ``` powershell
+    Copy-Item backend/.env.example backend/.env
+    ```
+
+3.  Open `backend/.env` and configure the values for your local
+    environment. For payment testing, add your Razorpay **Test Mode**
+    credentials. Do not use live keys for local testing.
+
+4.  Build and start the services:
+
+    ``` bash
+    docker compose up --build
+    ```
+
+5.  In a second terminal, create an administrator account and load demo
+    data:
+
+    ``` bash
+    docker compose exec backend python manage.py createsuperuser
+    docker compose exec backend python manage.py seed_demo
+    ```
+
+    The superuser can access the administration console.
+
+### Local URLs
+
+  Service                          URL
+  -------------------------------- -------------------------------------
+  Student application              http://localhost:5173
+  Administration console           http://localhost:5173/console
+  Django administration            http://localhost:8000/django-admin/
+  API documentation (Swagger UI)   http://localhost:8000/api/docs/
+  OpenAPI schema                   http://localhost:8000/api/schema/
+
+The development Vite server proxies `/api`, `/media`, and `/ws` requests
+to Django. The Docker Compose configuration sets the proxy target to the
+backend container.
 
 ## Run without Docker
-Needs PostgreSQL and Redis running locally (set POSTGRES_HOST=localhost, REDIS_URL=redis://localhost:6379/0).
-```bash
-cd backend && python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-export $(grep -v '^#' .env | xargs)          # after copying .env.example to .env
-python manage.py migrate && python manage.py seed_demo
-uvicorn config.asgi:application --reload      # API + WebSocket
-celery -A config worker -l info -Q critical,default,exec,reports
-celery -A config beat -l info
-cd ../frontend && npm install && npm run dev
+
+This mode requires PostgreSQL and Redis running locally.
+
+### 1. Configure the backend
+
+From the repository root:
+
+``` bash
+cd backend
 ```
 
-## Razorpay setup
-1. Dashboard > Settings > API Keys: put test key id/secret in `backend/.env`.
-2. Dashboard > Webhooks: URL `https://<public-host>/api/v1/billing/webhooks/razorpay`
-   (use ngrok locally), events `payment.captured`, `payment.failed`, `order.paid`; copy the secret to `RAZORPAY_WEBHOOK_SECRET`.
-3. Test UPI/card flows using Razorpay's test credentials.
+Create your local environment file by copying `.env.example` to `.env`,
+then update the database and Redis settings for services running on your
+machine. For example, use `POSTGRES_HOST=localhost` and
+`REDIS_URL=redis://localhost:6379/0`.
 
-## Tests
-- Backend: `cd backend && pytest` (SQLite + in-memory cache and channel layer, no services needed). Covers password reset, support chat
-  including a live WebSocket test, the whole admin API, announcements and exports.
-- Frontend: `cd frontend && npm test` (Vitest + jsdom smoke tests for the console and the student support/auth pages).
+Create and activate a virtual environment:
 
-## Where things live
-| Concern | Location |
-|---|---|
-| Money maths, order creation, `fulfill_order` | `backend/apps/billing/services.py` |
-| Webhook (signature + dedupe) | `backend/apps/billing/views.py` |
-| Access rule (`has_access`) | `backend/apps/access/services.py` |
-| JWT + httpOnly refresh cookie | `backend/apps/accounts/` |
-| Test timer + grading | `backend/apps/assessments/services.py` |
-| WebSocket auth ticket | `backend/apps/notifications/middleware.py` |
-| Feature flags / settings | `backend/apps/platform_config/` |
-| Axios client with silent refresh | `frontend/src/api/client.js` |
-| Checkout | `frontend/src/pages/Plans.jsx` |
-| Admin API (permissions, CRUD, dashboard, audit) | `backend/apps/adminpanel/` |
-| Support tickets, live events, auto-close | `backend/apps/support/` |
-| Email task, templates, announcements, exports | `backend/apps/notifications/` and `backend/templates/emails/` |
-| Reset / verify tokens | `backend/apps/accounts/tokens.py` |
-| Admin console screens | `frontend/src/console/` |
-| Generic list + form screen used by most admin pages | `frontend/src/components/CrudPage.jsx` |
-| Shared WebSocket + live counters | `frontend/src/realtime/Realtime.jsx` |
+**Windows PowerShell**
 
-## Security notes
-- Rotate your Razorpay keys if an earlier copy of this project (or its `.env`) was shared. Keys are no longer hard-coded in settings.
-- Reset links cannot be replayed, the forgot-password endpoint never reveals whether an email has an account, and both are rate limited.
-- Internal ticket notes are never sent to students, over the API or the WebSocket.
+``` powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
-## Before production
-Strong `DJANGO_SECRET_KEY`; SMTP or SES credentials for email; `FRONTEND_URL` set to your public domain (used in email links); `config.settings.prod`; HTTPS; real video CDN keys; object storage for media;
-run Gunicorn/Uvicorn behind Nginx; separate worker pools per Celery queue; Sentry.
+**macOS/Linux**
+
+``` bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install dependencies and initialize the database:
+
+``` bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py seed_demo
+```
+
+Start the ASGI application:
+
+``` bash
+uvicorn config.asgi:application --reload
+```
+
+### 2. Start Celery
+
+Open separate terminals from the `backend` directory, with the same
+environment activated.
+
+Worker:
+
+``` bash
+celery -A config worker -l info -Q critical,default,exec,reports
+```
+
+Scheduler:
+
+``` bash
+celery -A config beat -l info
+```
+
+The worker handles queued background tasks; Celery Beat schedules
+recurring maintenance jobs.
+
+### 3. Start the frontend
+
+In a new terminal:
+
+``` bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend is served at http://localhost:5173.
+
+## Environment configuration
+
+The backend reads configuration from environment variables. Start with
+`backend/.env.example` and set values appropriate for your environment.
+
+  -----------------------------------------------------------------------
+  Variable                            Purpose
+  ----------------------------------- -----------------------------------
+  `DJANGO_SECRET_KEY`                 Django signing key; use a strong
+                                      secret outside local development
+
+  `DJANGO_DEBUG`                      Enables or disables Django debug
+                                      mode
+
+  `DJANGO_ALLOWED_HOSTS`              Comma-separated list of allowed
+                                      hostnames
+
+  `POSTGRES_DB`                       PostgreSQL database name
+
+  `POSTGRES_USER` /                   Database credentials
+  `POSTGRES_PASSWORD`                 
+
+  `POSTGRES_HOST` / `POSTGRES_PORT`   Database connection settings
+
+  `REDIS_URL`                         Redis connection used by cache,
+                                      Celery, and Channels
+
+  `RAZORPAY_KEY_ID` /                 Razorpay API credentials
+  `RAZORPAY_KEY_SECRET`               
+
+  `RAZORPAY_WEBHOOK_SECRET`           Secret used to verify Razorpay
+                                      webhooks
+
+  `CORS_ALLOWED_ORIGINS`              Allowed frontend origins
+
+  `FRONTEND_URL`                      Public frontend URL used in email
+                                      links
+
+  `EMAIL_*`                           Email backend and SMTP
+                                      configuration
+
+  `VIDEO_CDN_HOST` /                  Video delivery configuration
+  `VIDEO_TOKEN_KEY`                   
+  -----------------------------------------------------------------------
+
+For local development, the configured email backend prints email
+messages to the console. To deliver real emails, configure an SMTP
+provider and set `EMAIL_BACKEND` and the corresponding `EMAIL_*`
+variables.
+
+**Never commit `backend/.env`, live payment credentials, production
+secrets, private media, or real user/payment data.** The repository
+includes `.env.example` as a template.
+
+## Razorpay test setup
+
+1.  Enable **Test Mode** in your Razorpay Dashboard.
+2.  Create or retrieve test API credentials and set `RAZORPAY_KEY_ID`
+    and `RAZORPAY_KEY_SECRET` in `backend/.env`.
+3.  Configure a webhook endpoint for your reachable backend:
+    `https://<your-public-host>/api/v1/billing/webhooks/razorpay`
+4.  Subscribe to the payment events required by the application,
+    including `payment.captured`, `payment.failed`, and `order.paid`,
+    and set the matching webhook secret in `RAZORPAY_WEBHOOK_SECRET`.
+5.  For local webhook testing, expose your development server using a
+    secure tunnelling tool and configure that public URL in Razorpay.
+
+Use Razorpay's official test payment details and test flows. Do not use
+live credentials for development or publish credentials in the
+repository.
+
+## API and real-time communication
+
+-   REST API routes are grouped under `/api/v1/`.
+-   Swagger UI is available at `/api/docs/`.
+-   The OpenAPI schema is available at `/api/schema/`.
+-   WebSocket routes are configured through Django Channels and the ASGI
+    application.
+-   In local development, Vite proxies API and WebSocket traffic to the
+    backend.
+
+For endpoint details, authentication requirements, request schemas, and
+response formats, use the generated API documentation while the backend
+is running.
+
+## Testing
+
+### Backend
+
+From `backend/`:
+
+``` bash
+pytest
+```
+
+The test configuration is designed to run the backend test suite with
+test-specific settings. Check the test configuration if you change
+database or service dependencies.
+
+### Frontend
+
+From `frontend/`:
+
+``` bash
+npm test
+```
+
+Create a production frontend build with:
+
+``` bash
+npm run build
+```
+
+## Production considerations
+
+Before deploying, review and configure all of the following:
+
+-   Use a strong `DJANGO_SECRET_KEY`, set `DJANGO_DEBUG=0`, and
+    configure `DJANGO_ALLOWED_HOSTS`.
+-   Use production database credentials and a managed or secured Redis
+    deployment.
+-   Configure HTTPS, trusted origins, CORS, and secure cookies for the
+    deployed domains.
+-   Set production Razorpay credentials only after completing test-mode
+    validation, and configure webhook signatures and delivery.
+-   Configure real SMTP/email delivery and set `FRONTEND_URL` to the
+    public frontend domain.
+-   Configure production video CDN credentials and persistent
+    media/object storage.
+-   Serve Django through an appropriate production ASGI/WSGI deployment
+    and reverse proxy.
+-   Run Celery workers and Celery Beat as managed processes; monitor
+    queue health, retries, and failures.
+-   Collect static files and configure static/media delivery for the
+    deployment environment.
+-   Keep secrets and personal data out of Git history, logs,
+    screenshots, and demo fixtures.
+
+The included Docker Compose setup is intended for local development, not
+as a complete production deployment configuration.
+
+## Project status
+
+The repository implements the learning, assessment, billing,
+notification, support, and administration workflows described above.
+Features such as a code lab, project workspace, interview preparation,
+AI assistant, certificates, and a college-specific panel are future
+enhancements and are not represented as currently available
+functionality.
+
+## License
+
+No license is specified in this repository yet. Add a `LICENSE` file
+before presenting the project as open source, and choose a license that
+matches how you want others to use the code.
