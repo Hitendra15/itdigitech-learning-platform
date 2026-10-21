@@ -132,7 +132,7 @@ Python, Node.js/npm, PostgreSQL, and Redis.
 1.  Clone the repository and enter the project directory:
 
     ``` bash
-    git clone https://github.com/<your-username>/itdigitech-learning-platform.git
+    git clone https://github.com/Hitendra15/itdigitech-learning-platform.git
     cd itdigitech-learning-platform
     ```
 
