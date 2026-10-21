@@ -1,0 +1,6 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h1 style="margin:0 0 14px;font-size:24px;letter-spacing:-.02em;">Your {{ kind }} export is ready</h1>
+<p style="margin:0 0 12px;font-size:15.5px;line-height:1.65;">The report contains {{ rows }} rows. Download it from the Reports page in the admin console.</p>
+<table role="presentation" cellspacing="0" cellpadding="0" style="margin:26px 0 8px;"><tr><td style="background:#2f46e6;border-radius:10px;"><a href="{{ url }}" style="display:inline-block;padding:13px 26px;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;">Open Reports</a></td></tr></table>
+{% endblock %}

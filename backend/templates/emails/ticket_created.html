@@ -1,0 +1,7 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h1 style="margin:0 0 14px;font-size:24px;letter-spacing:-.02em;">We received your request</h1>
+<p style="margin:0 0 12px;font-size:15.5px;line-height:1.65;">Hi {{ name }}, thanks for writing in. Our team will reply as soon as possible, usually within one working day.</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6fb;border-radius:12px;margin:16px 0;"><tr><td style="padding:16px 18px;font-size:14.5px;line-height:1.7;"><strong>{{ reference }}</strong><br><span style="color:#5b6684;">{{ subject_line }}</span></td></tr></table>
+<table role="presentation" cellspacing="0" cellpadding="0" style="margin:26px 0 8px;"><tr><td style="background:#2f46e6;border-radius:10px;"><a href="{{ url }}" style="display:inline-block;padding:13px 26px;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;">View your request</a></td></tr></table>
+{% endblock %}

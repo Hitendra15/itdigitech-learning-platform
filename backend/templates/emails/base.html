@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6fb;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0f1b3d;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6fb;padding:32px 12px;">
+  <tr><td align="center">
+    <table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;">
+      <tr><td style="padding:0 4px 18px;">
+        <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+          <td style="background:#2f46e6;width:34px;height:34px;border-radius:10px;text-align:center;color:#fff;font-weight:800;font-size:15px;line-height:34px;">&lt;/&gt;</td>
+          <td style="padding-left:10px;font-weight:800;font-size:17px;letter-spacing:-.02em;color:#0f1b3d;">IT DigiTech <span style="font-weight:600;color:#5b6684;font-size:13px;">Learn</span></td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="background:#ffffff;border:1px solid #e2e6f1;border-radius:16px;padding:34px 32px;">
+        {% block content %}{% endblock %}
+      </td></tr>
+      <tr><td style="padding:20px 8px 0;font-size:12.5px;line-height:1.6;color:#6b7694;text-align:center;">
+        {% block footer %}You are receiving this because of your {{ site_name }} account.{% endblock %}<br>
+        Need help? Write to <a href="mailto:{{ support_email }}" style="color:#2f46e6;">{{ support_email }}</a><br>
+        &copy; {{ year }} IT DigiTech Solutions
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

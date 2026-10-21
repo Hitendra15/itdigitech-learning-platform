@@ -1,0 +1,8 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h1 style="margin:0 0 14px;font-size:24px;letter-spacing:-.02em;">Welcome, {{ name }}</h1>
+<p style="margin:0 0 12px;font-size:15.5px;line-height:1.65;">Your account is ready. Please confirm your email address so we can reach you about payments, tests and support replies.</p>
+<table role="presentation" cellspacing="0" cellpadding="0" style="margin:26px 0 8px;"><tr><td style="background:#2f46e6;border-radius:10px;"><a href="{{ verify_url }}" style="display:inline-block;padding:13px 26px;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;">Confirm my email</a></td></tr></table>
+<p style="margin:0 0 6px;font-size:13.5px;color:#5b6684;line-height:1.6;">This link works for 3 days. If the button does not work, copy this address into your browser:</p>
+<p style="margin:0;font-size:12.5px;word-break:break-all;color:#2f46e6;">{{ verify_url }}</p>
+{% endblock %}
