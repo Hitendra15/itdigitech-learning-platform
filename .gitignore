@@ -8,3 +8,9 @@ staticfiles/
 *.sqlite3
 .pytest_cache/
 .venv/
+
+# Celery Beat runtime files
+celerybeat-schedule
+celerybeat-schedule.*
+backend/celerybeat-schedule
+backend/celerybeat-schedule.*
