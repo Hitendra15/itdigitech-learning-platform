@@ -5,7 +5,12 @@ import axios from "axios";
 let accessToken = null;
 export const setAccessToken = (t) => { accessToken = t; };
 
-const api = axios.create({ baseURL: "/api/v1", withCredentials: true });
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+});
 
 api.interceptors.request.use((cfg) => {
   if (accessToken) cfg.headers.Authorization = `Bearer ${accessToken}`;
@@ -24,8 +29,12 @@ api.interceptors.response.use(
     if (err.response?.status === 401 && !original._retry && !isAuthCall) {
       original._retry = true;
       refreshing ??= axios
-        .post("/api/v1/auth/refresh", null, { withCredentials: true })
-        .finally(() => { refreshing = null; });
+        .post(`${API_BASE_URL}/auth/refresh`, null, {
+          withCredentials: true,
+        })
+        .finally(() => {
+          refreshing = null;
+        });
       try {
         const { data } = await refreshing;
         setAccessToken(data.access);
