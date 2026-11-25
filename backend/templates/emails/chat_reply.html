@@ -1,0 +1,7 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h1 style="margin:0 0 14px;font-size:24px;letter-spacing:-.02em;">Our team replied to your chat</h1>
+<p style="margin:0 0 12px;font-size:15.5px;line-height:1.65;">Hi {{ name }}, you left our website chat before we could answer. Here is the reply:</p>
+<div style="border-left:3px solid #007FFF;background:#F0F0FF;padding:14px 18px;border-radius:0 10px 10px 0;margin:16px 0;font-size:15px;line-height:1.65;white-space:pre-wrap;">{{ preview }}</div>
+<p style="margin:0 0 6px;font-size:13.5px;color:#4B6075;line-height:1.6;">Just reply to this email or write to {{ support_email }} and we will pick it up from here.</p>
+{% endblock %}
