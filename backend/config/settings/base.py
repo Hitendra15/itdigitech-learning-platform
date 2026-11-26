@@ -127,12 +127,15 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-REDIS_URL = env("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = env("REDIS_URL", "")
 
+# Django Cache
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": REDIS_URL,
+        "KEY_PREFIX": "itdigitech",
+        "TIMEOUT": 300,
     }
 }
 
@@ -191,8 +194,13 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 # ---- Celery --------------------------------------------------------------
-CELERY_BROKER_URL = REDIS_URL
-CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_BROKER_URL = os.environ.get(
+    "CELERY_BROKER_URL", REDIS_URL
+)
+
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_RESULT_BACKEND", REDIS_URL
+)
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_TIMEZONE = TIME_ZONE
@@ -231,8 +239,12 @@ CELERY_BEAT_SCHEDULE = {
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [REDIS_URL]},
-    }
+        "CONFIG": {
+            "hosts": [
+                os.environ.get("CHANNEL_REDIS_URL", REDIS_URL)
+            ],
+        },
+    },
 }
 
 # ---- Razorpay ------------------------------------------------------------
