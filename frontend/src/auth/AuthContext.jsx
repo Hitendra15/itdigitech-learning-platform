@@ -1,59 +1,133 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import axios from "axios";
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
 import api, { setAccessToken } from "../api/client.js";
 
 const AuthContext = createContext(null);
+
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Load currently authenticated user.
   const loadMe = useCallback(async () => {
     const { data } = await api.get("/me");
+
     setUser(data);
+
     return data;
   }, []);
 
-  // Restore the session on page load using the refresh cookie.
+  // Restore session when application loads.
   useEffect(() => {
-    (async () => {
+    let active = true;
+
+    const restoreSession = async () => {
       try {
-        const { data } = await axios.post("/api/v1/auth/refresh", null, { withCredentials: true });
+        // IMPORTANT:
+        // Use the configured Axios instance.
+        // Do not use plain axios.post() with a relative URL.
+        const { data } = await api.post("/auth/refresh", null);
+
+        if (!data?.access) {
+          throw new Error("Refresh response does not contain an access token");
+        }
+
+        // Save new access token in memory.
         setAccessToken(data.access);
+
+        // Load authenticated user.
         await loadMe();
-      } catch {
-        setUser(null);
+
+      } catch (error) {
+        setAccessToken(null);
+
+        if (active) {
+          setUser(null);
+        }
+
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
-    })();
-    const onLogout = () => setUser(null);
-    window.addEventListener("auth:logout", onLogout);
-    return () => window.removeEventListener("auth:logout", onLogout);
+    };
+
+    restoreSession();
+
+    // Listen for authentication logout events.
+    const handleLogout = () => {
+      setAccessToken(null);
+      setUser(null);
+    };
+
+    window.addEventListener("auth:logout", handleLogout);
+
+    return () => {
+      active = false;
+
+      window.removeEventListener(
+        "auth:logout",
+        handleLogout
+      );
+    };
   }, [loadMe]);
 
+  // Handle successful login and registration.
   const handleAuth = ({ access, user }) => {
     setAccessToken(access);
     setUser(user);
+
     return user;
   };
 
-  const login = async (email, password) =>
-    handleAuth((await api.post("/auth/login", { email, password })).data);
+  // Login.
+  const login = async (email, password) => {
+    const { data } = await api.post("/auth/login", {
+      email,
+      password,
+    });
 
-  const register = async (form) =>
-    handleAuth((await api.post("/auth/register", form)).data);
+    return handleAuth(data);
+  };
 
+  // Register.
+  const register = async (form) => {
+    const { data } = await api.post("/auth/register", form);
+
+    return handleAuth(data);
+  };
+
+  // Logout.
   const logout = async () => {
-    try { await api.post("/auth/logout"); } finally {
+    try {
+      await api.post("/auth/logout");
+
+    } finally {
       setAccessToken(null);
       setUser(null);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser: loadMe }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        refreshUser: loadMe,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
